@@ -1,0 +1,287 @@
+@import url("https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700&family=Source+Sans+3:wght@400;500;700&display=swap");
+
+:root {
+  --bg-1: #f2f7ff;
+  --bg-2: #fff6e6;
+  --card: #ffffff;
+  --text: #13212e;
+  --muted: #5a6878;
+  --brand: #1752c2;
+  --high: #ad1d2b;
+  --medium: #c56900;
+  --low: #237a34;
+  --border: #d8e1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text);
+  background: linear-gradient(120deg, var(--bg-1), var(--bg-2));
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.page {
+  position: relative;
+  width: min(1100px, 94vw);
+  margin: 0 auto;
+  padding: 2.2rem 0 3rem;
+}
+
+.ambient {
+  position: absolute;
+  z-index: 0;
+  filter: blur(2px);
+  border-radius: 100%;
+  opacity: 0.55;
+}
+
+.ambient-a {
+  width: 260px;
+  height: 260px;
+  top: -80px;
+  right: -30px;
+  background: radial-gradient(circle at center, #66b0ff 0%, transparent 70%);
+}
+
+.ambient-b {
+  width: 220px;
+  height: 220px;
+  bottom: 0;
+  left: -40px;
+  background: radial-gradient(circle at center, #ffc968 0%, transparent 72%);
+}
+
+.hero,
+.grid {
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  text-align: left;
+  margin-bottom: 1.5rem;
+  animation: slide-up 0.5s ease;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #dce9ff;
+  color: #0b2f77;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Chivo", sans-serif;
+}
+
+h1 {
+  margin: 0.55rem 0 0.45rem;
+  font-size: clamp(2rem, 5.8vw, 3.5rem);
+  line-height: 1;
+}
+
+.hero-subtitle {
+  max-width: 70ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.05rem;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(24, 42, 66, 0.08);
+  animation: slide-up 0.55s ease both;
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 1.06rem;
+}
+
+textarea,
+input[type="file"],
+button {
+  font: inherit;
+}
+
+textarea,
+input[type="file"] {
+  border: 1px solid #bcc9d8;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  background: #fbfdff;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+button {
+  border: none;
+  border-radius: 0.8rem;
+  background: linear-gradient(92deg, #2059c3, #0f7d90);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.06rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+button:hover:enabled {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.file-name {
+  margin: 0;
+  color: var(--muted);
+}
+
+.error {
+  margin: 0.9rem 0 0;
+  color: #b00020;
+  font-weight: 700;
+}
+
+.result {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.probability-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.probability-value {
+  margin: 0;
+  line-height: 0.95;
+  font-family: "Chivo", sans-serif;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+}
+
+.meter {
+  width: 100%;
+  height: 0.95rem;
+  background: #ecf1f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.result-low .meter-fill,
+.result-low .probability-value {
+  color: var(--low);
+  background: linear-gradient(90deg, #2aa141, #3dbf5a);
+}
+
+.result-medium .meter-fill,
+.result-medium .probability-value {
+  color: var(--medium);
+  background: linear-gradient(90deg, #cc7a00, #e2a137);
+}
+
+.result-high .meter-fill,
+.result-high .probability-value {
+  color: var(--high);
+  background: linear-gradient(90deg, #be2d36, #d9564f);
+}
+
+.result-block h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.07rem;
+}
+
+.result-block p {
+  margin: 0;
+}
+
+.result-block ul,
+.result-block ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.result-block li + li {
+  margin-top: 0.32rem;
+}
+
+.confidence-note {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.placeholder {
+  margin: 0;
+  color: var(--muted);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page {
+    padding-top: 1.35rem;
+  }
+}
