@@ -27,7 +27,7 @@ Pouzity je Google Gemini API (Google AI Studio), ktory ma free tier.
 
 ```env
 GEMINI_API_KEY=vas_kluc
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ## 3) Deploy na Vercel

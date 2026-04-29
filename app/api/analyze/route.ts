@@ -157,7 +157,7 @@ Vstup používateľa:
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+    const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
     if (!apiKey) {
       return NextResponse.json(
@@ -235,6 +235,11 @@ export async function POST(request: Request) {
       | null;
 
     if (!geminiResponse.ok) {
+      console.error("Gemini API error", {
+        status: geminiResponse.status,
+        model,
+        payload: geminiPayload
+      });
       return NextResponse.json(
         {
           error:
