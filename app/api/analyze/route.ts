@@ -154,10 +154,80 @@ Vstup používateľa:
 `.trim();
 }
 
+async function callGemini(
+  model: string,
+  apiKey: string,
+  parts: Array<Record<string, unknown>>,
+  signal: AbortSignal
+): Promise<Response> {
+  return fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
+      }),
+      signal
+    }
+  );
+}
+
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+
+async function callGeminiWithRetries(
+  models: string[],
+  apiKey: string,
+  parts: Array<Record<string, unknown>>,
+  signal: AbortSignal
+): Promise<{ response: Response; payload: Record<string, unknown> | null; modelUsed: string }> {
+  let lastResponse: Response | null = null;
+  let lastPayload: Record<string, unknown> | null = null;
+  let lastModel = models[0] ?? "";
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const response = await callGemini(model, apiKey, parts, signal);
+      lastResponse = response;
+      lastModel = model;
+      const payload = (await response.json().catch(() => null)) as
+        | Record<string, unknown>
+        | null;
+      lastPayload = payload;
+
+      if (response.ok) {
+        return { response, payload, modelUsed: model };
+      }
+
+      if (!RETRYABLE_STATUSES.has(response.status)) {
+        return { response, payload, modelUsed: model };
+      }
+
+      if (attempt < 2) {
+        const backoff = 600 * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, backoff));
+      }
+    }
+  }
+
+  return {
+    response: lastResponse as Response,
+    payload: lastPayload,
+    modelUsed: lastModel
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    const primaryModel = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    const fallbackModel = "gemini-2.5-flash-lite";
+    const models =
+      primaryModel === fallbackModel ? [primaryModel] : [primaryModel, fallbackModel];
 
     if (!apiKey) {
       return NextResponse.json(
@@ -203,45 +273,27 @@ export async function POST(request: Request) {
     const timeout = setTimeout(() => controller.abort(), 25000);
 
     let geminiResponse: Response;
+    let geminiPayload: Record<string, unknown> | null;
+    let modelUsed: string;
     try {
-      geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts
-              }
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: "application/json"
-            }
-          }),
-          signal: controller.signal
-        }
-      );
+      const result = await callGeminiWithRetries(models, apiKey, parts, controller.signal);
+      geminiResponse = result.response;
+      geminiPayload = result.payload;
+      modelUsed = result.modelUsed;
     } finally {
       clearTimeout(timeout);
     }
 
-    const geminiPayload = (await geminiResponse.json().catch(() => null)) as
-      | Record<string, unknown>
-      | null;
-
     if (!geminiResponse.ok) {
-      const debugLine = `GEMINI_FAIL status=${geminiResponse.status} model=${model} body=${JSON.stringify(geminiPayload)}`;
-      console.error(debugLine);
+      console.error(
+        `GEMINI_FAIL status=${geminiResponse.status} model=${modelUsed} body=${JSON.stringify(geminiPayload)}`
+      );
+      const overloaded = geminiResponse.status === 503 || geminiResponse.status === 429;
       return NextResponse.json(
         {
-          error:
-            "AI služba momentálne neodpovedá správne. Skúste to o chvíľu znova.",
-          debug: debugLine
+          error: overloaded
+            ? "AI je momentálne preťažená. Skúste to prosím o chvíľu znova."
+            : "AI služba momentálne neodpovedá správne. Skúste to o chvíľu znova."
         },
         { status: 502 }
       );
