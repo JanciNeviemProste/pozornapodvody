@@ -235,15 +235,13 @@ export async function POST(request: Request) {
       | null;
 
     if (!geminiResponse.ok) {
-      console.error("Gemini API error", {
-        status: geminiResponse.status,
-        model,
-        payload: geminiPayload
-      });
+      const debugLine = `GEMINI_FAIL status=${geminiResponse.status} model=${model} body=${JSON.stringify(geminiPayload)}`;
+      console.error(debugLine);
       return NextResponse.json(
         {
           error:
-            "AI služba momentálne neodpovedá správne. Skúste to o chvíľu znova."
+            "AI služba momentálne neodpovedá správne. Skúste to o chvíľu znova.",
+          debug: debugLine
         },
         { status: 502 }
       );
